@@ -10,8 +10,9 @@ let init = (app) => {
     app.data = {
         // Complete as you see fit.
         rows: [],
-        testing: [],
         ret_obj: [],
+        query: "",
+        results: [],
     };    
     
     app.enumerate = (a) => {
@@ -27,18 +28,34 @@ let init = (app) => {
                 id: follower_id
             }).then(function (response){
                 console.log(response)
-                axios.get(get_users_url).then(function (response){
+                axios.get(search_url, {params: {q: app.vue.query}}).then(function (response) {
                     app.vue.rows = app.enumerate(response.data.rows);
-                    app.vue.testing = app.enumerate(response.data.testing);
                     app.vue.ret_obj = app.enumerate(response.data.ret_obj);
                 });
         })
+    }
+
+    app.search = function () {
+        axios.get(search_url, {params: {q: app.vue.query}}).then(function (response) {
+                app.vue.rows = app.enumerate(response.data.rows);
+                app.vue.ret_obj = app.enumerate(response.data.ret_obj);
+            });
+    }
+
+    app.reload = function () {
+        app.vue.query = ""
+        axios.get(search_url, {params: {q: app.vue.query}}).then(function (response) {
+                app.vue.rows = app.enumerate(response.data.rows);
+                app.vue.ret_obj = app.enumerate(response.data.ret_obj);
+            });
     }
 
     // This contains all the methods.
     app.methods = {
         // Complete as you see fit.
         set_follow: app.set_follow,
+        search: app.search,
+        reload: app.reload,
     };
 
     // This creates the Vue instance.
@@ -53,7 +70,6 @@ let init = (app) => {
         // Put here any initialization code.
         axios.get(get_users_url).then(function (response){
             app.vue.rows = app.enumerate(response.data.rows);
-            app.vue.testing = app.enumerate(response.data.testing);
             app.vue.ret_obj = app.enumerate(response.data.ret_obj);
         });
     };

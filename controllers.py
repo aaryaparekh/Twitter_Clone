@@ -27,6 +27,8 @@ Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app w
 
 import datetime
 import random
+import uuid
+import random
 
 from py4web import action, request, abort, redirect, URL
 from yatl.helpers import A
@@ -52,6 +54,7 @@ def index():
         # COMPLETE: return here any signed URLs you need.
         get_users_url=URL('get_users', signer=url_signer),
         set_follow_url=URL('set_follow', signer=url_signer),
+        search_url = URL('search', signer=url_signer),
     )
 
 
@@ -75,7 +78,9 @@ def get_users():
 
     ret_obj_list = sorted(ret_obj_list, key=lambda d: d['followed'], reverse=True)
 
-    return dict(rows=rows, testing=follows, ret_obj=ret_obj_list)
+    ret_obj_list = ret_obj_list[:MAX_RETURNED_USERS]
+
+    return dict(rows=rows, ret_obj=ret_obj_list)
 
 
 @action("set_follow", method="POST")
@@ -95,7 +100,7 @@ def set_follow():
         return "ERROR: follower id is not real"
 
     # if entry exists in follow table, delete it. Else make it
-    entry = db(db.follow.user == auth.user_id and db.follow.follower == follower_id).select()
+    entry = db((db.follow.user == auth.user_id) & (db.follow.follower == follower_id)).select()
 
     if entry:
         #delete it
@@ -105,3 +110,31 @@ def set_follow():
         #make it
         db.follow.insert(follower=follower_id)
         return "followed " + str(follower_id)
+
+
+@action('search')
+@action.uses(db, auth.user, url_signer.verify())
+def search():
+    q = str(request.params.get('q'))
+
+
+    rows = db((db.auth_user.id != auth.user_id) & (db.auth_user.username.like(q+'%'))).select().as_list()
+    follows = db(db.follow.user == auth.user_id).select().as_list()
+
+    ret_obj = {}
+    for r in rows:
+        ret_obj[r['id']] = False
+
+    for f in follows:
+        if f['follower'] in ret_obj.keys():
+            ret_obj[f['follower']] = True
+
+    ret_obj_list = []
+    for r in rows:
+        ret_obj_list.append({"id": r['id'], "followed": ret_obj[r['id']], "username": r['username']})
+
+    ret_obj_list = sorted(ret_obj_list, key=lambda d: d['followed'], reverse=True)
+
+    ret_obj_list = ret_obj_list[:MAX_RETURNED_USERS]
+
+    return dict(rows=rows, ret_obj=ret_obj_list)
