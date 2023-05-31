@@ -13,6 +13,7 @@ let init = (app) => {
         ret_obj: [],
         query: "",
         results: [],
+        new_meow: "",
     };    
     
     app.enumerate = (a) => {
@@ -50,12 +51,19 @@ let init = (app) => {
             });
     }
 
+    app.publish_meow = function () {
+        axios.get(publish_meow_url, {params: {new_meow: app.vue.new_meow}}).then(function (response) {
+            console.log("Published meow!")
+        });
+    }
+
     // This contains all the methods.
     app.methods = {
         // Complete as you see fit.
         set_follow: app.set_follow,
         search: app.search,
         reload: app.reload,
+        publish_meow: app.publish_meow,
     };
 
     // This creates the Vue instance.

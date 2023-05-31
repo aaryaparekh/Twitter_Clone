@@ -1,64 +1,106 @@
 [[extend 'layout.html']]
 
 <style>
-[v-cloak] {
-     display: none;
-}
+    [v-cloak] {
+        display: none;
+    }
 </style>
 
 
 <div class="section" id="vue-target" v-cloak>
-  <!-- Put here your Vue.js template -->
-<!--  <div>-->
-<!--      ROWS::-->
-<!--      {{rows}}-->
-<!--    </div>-->
-<!--    <div>-->
-<!--      RET_OBJ:-->
-<!--      {{ret_obj}}-->
-<!--    </div>-->
+    <!-- Put here your Vue.js template -->
 
-  <div class="columns">
-    <div class="column">
-      Feed.
-    </div>
+<!--        <div>-->
+<!--          Test:-->
+<!--          {{new_meow}}-->
+<!--        </div>-->
 
-    <div class="column is-one-third has-background-light">
+    <div class="columns">
 
-      
-      <div class="field">
-        <p class="control has-icons-right">
-          <input class="input" type="text" v-model="query" @keyup="search" placeholder="Search users">
-          <span class="icon is-small is-right clickable" @click="reload">
+        <!--Feed-->
+        <div class="column">
+            <div class="field">
+                <textarea class="textarea" placeholder="What's on your mind?" rows="2" v-model="new_meow"></textarea>
+            </div>
+
+            <div class="field">
+                <div class="control">
+                    <button class="button is-link" @click="publish_meow">Publish!</button>
+                </div>
+            </div>
+
+            <div class="box">
+                <nav class="level is-mobile">
+                    <div class="level-left">
+                        <a class="level-item" aria-label="reply">
+                          <span class="icon is-small">
+                              <i class="fa fa-user"></i>
+                          </span>
+                            <span class="ml-2">Grizabella</span>
+                        </a>
+                    </div>
+                    <div class="level-right">
+                      <span class="level-item">
+                          One minute ago
+                      </span>
+                    </div>
+                </nav>
+                <div class="content">
+                    I love tuna fish.
+                </div>
+                <nav class="level is-mobile">
+                    <div class="level-left">
+                        <a class="level-item" aria-label="reply">
+                          <span class="icon is-small">
+                              <i class="fa fa-reply" aria-hidden="true"></i>
+                          </span>
+                            <span class="ml-1">4</span>
+                        </a>
+                        <a class="level-item" aria-label="retweet">
+                          <span class="icon is-small">
+                              <i class="fa fa-retweet" aria-hidden="true"></i>
+                          </span>
+                        </a>
+                    </div>
+                </nav>
+            </div>
+        </div>
+
+
+        <div class="column is-one-third has-background-light">
+            <div class="field">
+                <p class="control has-icons-right">
+                    <input class="input" type="text" v-model="query" @keyup="search" placeholder="Search users">
+                    <span class="icon is-small is-right clickable" @click="reload">
             <i class="fa fa-times-circle"></i>
           </span>
-        </p>
-      </div>
+                </p>
+            </div>
 
-          <div class="field has-addons" v-for="r in ret_obj">
+            <div class="field has-addons" v-for="r in ret_obj">
 
-            <p class="control">
-            <button class="button">
-              <span>{{r.username}}</span>
-            </button>
-          </p>
-          <p class="control">
-              <button v-if="r.followed" @click="set_follow(r.id)" class="button is-danger is-outlined">
+                <p class="control">
+                    <button class="button">
+                        <span>{{r.username}}</span>
+                    </button>
+                </p>
+                <p class="control">
+                    <button v-if="r.followed" @click="set_follow(r.id)" class="button is-danger is-outlined">
                 <span class="icon is-small">
                   <i class="fa fa-times"></i>
                 </span>
-                <span>Unfollow</span>
-              </button>
+                        <span>Unfollow</span>
+                    </button>
 
-              <button v-else @click="set_follow(r.id)" class="button is-success is-outlined">
+                    <button v-else @click="set_follow(r.id)" class="button is-success is-outlined">
                 <span class="icon is-small">
                   <i class="fa fa-check"></i>
                 </span>
-                <span>Follow</span>
-              </button>
-          </p>
+                        <span>Follow</span>
+                    </button>
+                </p>
 
-        </div>
+            </div>
 
         </div>
 
@@ -69,9 +111,10 @@
 [[block page_scripts]]
 <!-- Loads the index-specific js for Vue -->
 <script>
-  let get_users_url = "[[=XML(get_users_url)]]";
-  let set_follow_url = "[[=XML(set_follow_url)]]";
-  let search_url = "[[=XML(search_url)]]";
+    let get_users_url = "[[=XML(get_users_url)]]";
+    let set_follow_url = "[[=XML(set_follow_url)]]";
+    let search_url = "[[=XML(search_url)]]";
+    let publish_meow_url = "[[=XML(publish_meow_url)]]";
 </script>
 <script src="js/index.js"></script>
 [[end]]

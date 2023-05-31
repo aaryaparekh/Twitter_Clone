@@ -42,10 +42,6 @@ url_signer = URLSigner(session)
 MAX_RETURNED_USERS = 20  # Our searches do not return more than 20 users.
 MAX_RESULTS = 20  # Maximum number of returned meows.
 
-#TODO:
-#index.html gives a signed URL and has ajax that calls get_users with user input string
-#get_users finds all users with given string and returns 20 users to index.html
-#index.html displays users it got
 
 @action('index')
 @action.uses('index.html', db, auth.user, url_signer)
@@ -55,6 +51,7 @@ def index():
         get_users_url=URL('get_users', signer=url_signer),
         set_follow_url=URL('set_follow', signer=url_signer),
         search_url = URL('search', signer=url_signer),
+        publish_meow_url = URL('publish_meow', signer=url_signer),
     )
 
 
@@ -117,7 +114,6 @@ def set_follow():
 def search():
     q = str(request.params.get('q'))
 
-
     rows = db((db.auth_user.id != auth.user_id) & (db.auth_user.username.like(q+'%'))).select().as_list()
     follows = db(db.follow.user == auth.user_id).select().as_list()
 
@@ -138,3 +134,15 @@ def search():
     ret_obj_list = ret_obj_list[:MAX_RETURNED_USERS]
 
     return dict(rows=rows, ret_obj=ret_obj_list)
+
+
+@action('publish_meow')
+@action.uses(db, auth.user, url_signer.verify())
+def publish_meow():
+    new_meow = str(request.params.get('new_meow'))
+
+    #publish
+    db.meow.insert(content=new_meow)
+
+
+

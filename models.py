@@ -32,6 +32,13 @@ db.define_table(
     Field('follower', 'reference auth_user', default=None),
 )
 
+#meows
+db.define_table(
+    'meow',
+    Field('content', type='string'),
+    Field('author', 'reference auth_user', default=lambda: auth.user_id),
+)
+
 db.commit()
 
 def add_users_for_testing(num_users):
