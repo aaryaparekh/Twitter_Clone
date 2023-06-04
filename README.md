@@ -1,6 +1,3 @@
-# Vue Start
+# Twitter Clone
 
-This app is the starting point for all of our 
-Vue applications.  To write a new Vue app 
-in py4web, clone this application in your apps 
-folder, and work on it. 
+This app uses vue.js for frontend and py4web for backend to create a Twitter clone. You can make an account, follow other users, and send "tweets" that get shared to a feed.
