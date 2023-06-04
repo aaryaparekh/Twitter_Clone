@@ -14,6 +14,7 @@ let init = (app) => {
         query: "",
         results: [],
         new_meow: "",
+        meows: [],
     };    
     
     app.enumerate = (a) => {
@@ -52,10 +53,57 @@ let init = (app) => {
     }
 
     app.publish_meow = function () {
-        axios.get(publish_meow_url, {params: {new_meow: app.vue.new_meow}}).then(function (response) {
+        axios.get(publish_meow_url, {params: {
+            new_meow: app.vue.new_meow,
+                timestamp: new Date().toISOString()}}).then(function (response) {
             console.log("Published meow!")
+
+            app.get_recent_meows();
+
         });
     }
+
+    app.get_recent_meows = function () {
+        axios.get(get_recent_meows_url).then(function (response) {
+                let meows = app.enumerate(response.data.meows);
+
+                for (let i = 0; i<meows.length; i++) {
+                    let timestamp = new Date(meows[i].timestamp);
+                    meows[i].timestamp = Sugar.Date(timestamp).relative().raw;
+                }
+
+                app.vue.meows = meows;
+
+                // let cur_timestamp = new Date();
+                //
+                // console.log("current: " + cur_timestamp.toISOString())
+                //
+                // for (let i = 0; i < meows.length; i++) {
+                //     let timestamp = new Date(meows[i].timestamp);
+                //     let diff_ms = cur_timestamp - timestamp
+                //
+                //     if (Math.floor(diff_ms / 86400000) > 0){
+                //         // Meow is more than a day old, display date and time
+                //         meows[i].timestamp = timestamp.toLocaleString();
+                //     } else if (Math.floor((diff_ms % 86400000) / 3600000) > 0) {
+                //         // Meow is hours old
+                //         meows[i].timestamp = Math.floor((diff_ms % 86400000) / 3600000) + " hours ago";
+                //     } else if (Math.round(((diff_ms % 86400000) % 3600000) / 60000) > 0) {
+                //         // Meow is minutes old
+                //         if (Math.round(((diff_ms % 86400000) % 3600000) / 60000) === 1) {
+                //             meows[i].timestamp = Math.round(((diff_ms % 86400000) % 3600000) / 60000) + " minute ago";
+                //         } else {
+                //             meows[i].timestamp = Math.round(((diff_ms % 86400000) % 3600000) / 60000) + " minutes ago";
+                //         }
+                //     } else {
+                //         meows[i].timestamp = "Just now";
+                //     }
+                // }
+                //
+                // app.vue.meows = meows;
+        });
+    }
+
 
     // This contains all the methods.
     app.methods = {
@@ -80,6 +128,9 @@ let init = (app) => {
             app.vue.rows = app.enumerate(response.data.rows);
             app.vue.ret_obj = app.enumerate(response.data.ret_obj);
         });
+
+        app.get_recent_meows();
+
     };
 
     // Call to the initializer.

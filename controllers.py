@@ -52,6 +52,7 @@ def index():
         set_follow_url=URL('set_follow', signer=url_signer),
         search_url = URL('search', signer=url_signer),
         publish_meow_url = URL('publish_meow', signer=url_signer),
+        get_recent_meows_url = URL('get_recent_meows', signer=url_signer),
     )
 
 
@@ -140,9 +141,15 @@ def search():
 @action.uses(db, auth.user, url_signer.verify())
 def publish_meow():
     new_meow = str(request.params.get('new_meow'))
+    timestamp = str(request.params.get('timestamp'))
 
     #publish
-    db.meow.insert(content=new_meow)
+    db.meow.insert(content=new_meow, timestamp=timestamp)
 
 
+@action('get_recent_meows')
+@action.uses(db, auth.user, url_signer.verify())
+def get_recent_meows():
+    recent_meows = db(db.meow).select(orderby=~db.meow.timestamp)
 
+    return dict(meows=recent_meows)

@@ -12,8 +12,10 @@ from pydal.validators import *
 def get_user_email():
     return auth.current_user.get('email') if auth.current_user else None
 
+
 def get_username():
     return auth.current_user.get('username') if auth.current_user else None
+
 
 def get_time():
     return datetime.datetime.utcnow()
@@ -25,24 +27,29 @@ def get_time():
 #
 ## always commit your models to avoid problems later
 
-#user follows follower
+# user follows follower
 db.define_table(
     'follow',
     Field('user', 'reference auth_user', default=lambda: auth.user_id),
     Field('follower', 'reference auth_user', default=None),
 )
 
-#meows
+# meows
 db.define_table(
     'meow',
     Field('content', type='string'),
     Field('author', 'reference auth_user', default=lambda: auth.user_id),
+    Field('timestamp', type='string'),
+    Field('username', default=lambda: get_username()),
 )
+
+# db.meow.drop()
 
 db.commit()
 
+
 def add_users_for_testing(num_users):
-    # Test user names begin with "_".
+    # Test usernames begin with "_".
     # Counts how many users we need to add.
     db(db.auth_user.username.startswith("_")).delete()
     num_test_users = db(db.auth_user.username.startswith("_")).count()
@@ -61,6 +68,7 @@ def add_users_for_testing(num_users):
         )
         auth.register(user, send=False)
     db.commit()
-    
+
+
 # Comment out this line if you are not interested. 
 add_users_for_testing(5)

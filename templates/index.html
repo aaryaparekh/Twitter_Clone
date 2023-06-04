@@ -10,10 +10,10 @@
 <div class="section" id="vue-target" v-cloak>
     <!-- Put here your Vue.js template -->
 
-<!--        <div>-->
-<!--          Test:-->
-<!--          {{new_meow}}-->
-<!--        </div>-->
+    <div>
+        Test:
+        {{meows}}
+    </div>
 
     <div class="columns">
 
@@ -29,24 +29,24 @@
                 </div>
             </div>
 
-            <div class="box">
+            <div class="box" v-for="meow in meows">
                 <nav class="level is-mobile">
                     <div class="level-left">
                         <a class="level-item" aria-label="reply">
                           <span class="icon is-small">
                               <i class="fa fa-user"></i>
                           </span>
-                            <span class="ml-2">Grizabella</span>
+                            <span class="ml-2">{{meow.username}}</span>
                         </a>
                     </div>
                     <div class="level-right">
                       <span class="level-item">
-                          One minute ago
+                          {{meow.timestamp}}
                       </span>
                     </div>
                 </nav>
                 <div class="content">
-                    I love tuna fish.
+                    {{meow.content}}
                 </div>
                 <nav class="level is-mobile">
                     <div class="level-left">
@@ -64,6 +64,7 @@
                     </div>
                 </nav>
             </div>
+
         </div>
 
 
@@ -115,6 +116,7 @@
     let set_follow_url = "[[=XML(set_follow_url)]]";
     let search_url = "[[=XML(search_url)]]";
     let publish_meow_url = "[[=XML(publish_meow_url)]]";
+    let get_recent_meows_url = "[[=XML(get_recent_meows_url)]]";
 </script>
 <script src="js/index.js"></script>
 [[end]]
