@@ -50,9 +50,11 @@ def index():
         # COMPLETE: return here any signed URLs you need.
         get_users_url=URL('get_users', signer=url_signer),
         set_follow_url=URL('set_follow', signer=url_signer),
-        search_url = URL('search', signer=url_signer),
-        publish_meow_url = URL('publish_meow', signer=url_signer),
-        get_recent_meows_url = URL('get_recent_meows', signer=url_signer),
+        search_url=URL('search', signer=url_signer),
+        publish_meow_url=URL('publish_meow', signer=url_signer),
+        get_recent_meows_url=URL('get_recent_meows', signer=url_signer),
+        get_my_meows_url=URL('get_my_meows', signer=url_signer),
+        get_my_feed_url=URL('get_my_feed', signer=url_signer),
     )
 
 
@@ -115,7 +117,7 @@ def set_follow():
 def search():
     q = str(request.params.get('q'))
 
-    rows = db((db.auth_user.id != auth.user_id) & (db.auth_user.username.like(q+'%'))).select().as_list()
+    rows = db((db.auth_user.id != auth.user_id) & (db.auth_user.username.startswith(q))).select().as_list()
     follows = db(db.follow.user == auth.user_id).select().as_list()
 
     ret_obj = {}
@@ -153,3 +155,27 @@ def get_recent_meows():
     recent_meows = db(db.meow).select(orderby=~db.meow.timestamp)
 
     return dict(meows=recent_meows)
+
+
+@action('get_my_feed')
+@action.uses(db, auth.user, url_signer.verify())
+def get_my_feed():
+    followers = db(db.follow.user == auth.user_id).select()
+
+    if len(followers) > 0:
+        # followers found
+        joined_obj = db((db.follow.user == auth.user_id) & (db.meow.author == db.follow.follower)).select(orderby=~db.meow.timestamp)
+        return dict(ret_type=0, joined_obj=joined_obj)
+
+    else:
+        # no followers, return most recent meows
+        recent_meows = db(db.meow).select(orderby=~db.meow.timestamp)
+        return dict(ret_type=1, recent_meows=recent_meows)
+
+
+@action('get_my_meows')
+@action.uses(db, auth.user, url_signer.verify())
+def get_my_meows():
+    my_meows = db(db.meow.author == auth.user_id).select(orderby=~db.meow.timestamp)
+
+    return dict(meows=my_meows)

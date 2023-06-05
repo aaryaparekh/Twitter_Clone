@@ -31,24 +31,24 @@ let init = (app) => {
             }).then(function (response){
                 console.log(response)
                 axios.get(search_url, {params: {q: app.vue.query}}).then(function (response) {
-                    app.vue.rows = app.enumerate(response.data.rows);
-                    app.vue.ret_obj = app.enumerate(response.data.ret_obj);
+                    app.vue.rows = response.data.rows;
+                    app.vue.ret_obj = response.data.ret_obj;
                 });
         })
     }
 
     app.search = function () {
         axios.get(search_url, {params: {q: app.vue.query}}).then(function (response) {
-                app.vue.rows = app.enumerate(response.data.rows);
-                app.vue.ret_obj = app.enumerate(response.data.ret_obj);
+                app.vue.rows = response.data.rows;
+                app.vue.ret_obj = response.data.ret_obj;
             });
     }
 
     app.reload = function () {
         app.vue.query = ""
         axios.get(search_url, {params: {q: app.vue.query}}).then(function (response) {
-                app.vue.rows = app.enumerate(response.data.rows);
-                app.vue.ret_obj = app.enumerate(response.data.ret_obj);
+                app.vue.rows = response.data.rows;
+                app.vue.ret_obj = response.data.ret_obj;
             });
     }
 
@@ -65,7 +65,7 @@ let init = (app) => {
 
     app.get_recent_meows = function () {
         axios.get(get_recent_meows_url).then(function (response) {
-                let meows = app.enumerate(response.data.meows);
+                let meows = response.data.meows;
 
                 for (let i = 0; i<meows.length; i++) {
                     let timestamp = new Date(meows[i].timestamp);
@@ -73,37 +73,51 @@ let init = (app) => {
                 }
 
                 app.vue.meows = meows;
-
-                // let cur_timestamp = new Date();
-                //
-                // console.log("current: " + cur_timestamp.toISOString())
-                //
-                // for (let i = 0; i < meows.length; i++) {
-                //     let timestamp = new Date(meows[i].timestamp);
-                //     let diff_ms = cur_timestamp - timestamp
-                //
-                //     if (Math.floor(diff_ms / 86400000) > 0){
-                //         // Meow is more than a day old, display date and time
-                //         meows[i].timestamp = timestamp.toLocaleString();
-                //     } else if (Math.floor((diff_ms % 86400000) / 3600000) > 0) {
-                //         // Meow is hours old
-                //         meows[i].timestamp = Math.floor((diff_ms % 86400000) / 3600000) + " hours ago";
-                //     } else if (Math.round(((diff_ms % 86400000) % 3600000) / 60000) > 0) {
-                //         // Meow is minutes old
-                //         if (Math.round(((diff_ms % 86400000) % 3600000) / 60000) === 1) {
-                //             meows[i].timestamp = Math.round(((diff_ms % 86400000) % 3600000) / 60000) + " minute ago";
-                //         } else {
-                //             meows[i].timestamp = Math.round(((diff_ms % 86400000) % 3600000) / 60000) + " minutes ago";
-                //         }
-                //     } else {
-                //         meows[i].timestamp = "Just now";
-                //     }
-                // }
-                //
-                // app.vue.meows = meows;
         });
     }
 
+    app.get_my_feed = function () {
+        axios.get(get_my_feed_url).then(function (response) {
+
+            let ret_type = response.data.ret_type;
+
+            if (ret_type === 0) {
+                // Followers found, need to unpack and process joined tables
+                let joined_obj = response.data.joined_obj;
+                let meows = [];
+                for (let i = 0; i<joined_obj.length; i++) {
+                    let timestamp = new Date(joined_obj[i].meow.timestamp);
+                    joined_obj[i].meow.timestamp = Sugar.Date(timestamp).relative().raw;
+                    meows.push(joined_obj[i].meow);
+                }
+
+                app.vue.meows = meows;
+            } else {
+                // No followers found, just process recent meows
+                let meows = response.data.recent_meows;
+
+                for (let i = 0; i<meows.length; i++) {
+                    let timestamp = new Date(meows[i].timestamp);
+                    meows[i].timestamp = Sugar.Date(timestamp).relative().raw;
+                }
+
+                app.vue.meows = meows;
+            }
+        });
+    }
+
+    app.get_my_meows = function () {
+        axios.get(get_my_meows_url).then(function (response) {
+            let meows = response.data.meows;
+
+            for (let i = 0; i<meows.length; i++) {
+                let timestamp = new Date(meows[i].timestamp);
+                meows[i].timestamp = Sugar.Date(timestamp).relative().raw;
+            }
+
+            app.vue.meows = meows;
+        });
+    }
 
     // This contains all the methods.
     app.methods = {
@@ -112,6 +126,9 @@ let init = (app) => {
         search: app.search,
         reload: app.reload,
         publish_meow: app.publish_meow,
+        get_recent_meows: app.get_recent_meows,
+        get_my_feed: app.get_my_feed,
+        get_my_meows: app.get_my_meows,
     };
 
     // This creates the Vue instance.
@@ -125,8 +142,8 @@ let init = (app) => {
     app.init = () => {
         // Put here any initialization code.
         axios.get(get_users_url).then(function (response){
-            app.vue.rows = app.enumerate(response.data.rows);
-            app.vue.ret_obj = app.enumerate(response.data.ret_obj);
+            app.vue.rows = response.data.rows;
+            app.vue.ret_obj = response.data.ret_obj;
         });
 
         app.get_recent_meows();
