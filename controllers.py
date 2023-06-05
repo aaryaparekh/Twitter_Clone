@@ -55,6 +55,7 @@ def index():
         get_recent_meows_url=URL('get_recent_meows', signer=url_signer),
         get_my_meows_url=URL('get_my_meows', signer=url_signer),
         get_my_feed_url=URL('get_my_feed', signer=url_signer),
+        get_selected_user_meows_url = URL('get_selected_user_meows', signer=url_signer),
     )
 
 
@@ -152,7 +153,7 @@ def publish_meow():
 @action('get_recent_meows')
 @action.uses(db, auth.user, url_signer.verify())
 def get_recent_meows():
-    recent_meows = db(db.meow).select(orderby=~db.meow.timestamp)
+    recent_meows = db(db.meow).select(orderby=~db.meow.timestamp, limitby=(0, MAX_RESULTS))
 
     return dict(meows=recent_meows)
 
@@ -164,18 +165,30 @@ def get_my_feed():
 
     if len(followers) > 0:
         # followers found
-        joined_obj = db((db.follow.user == auth.user_id) & (db.meow.author == db.follow.follower)).select(orderby=~db.meow.timestamp)
+        joined_obj = db((db.follow.user == auth.user_id) & (db.meow.author == db.follow.follower)).select(orderby=~db.meow.timestamp, limitby=(0, MAX_RESULTS))
         return dict(ret_type=0, joined_obj=joined_obj)
 
     else:
         # no followers, return most recent meows
-        recent_meows = db(db.meow).select(orderby=~db.meow.timestamp)
+        recent_meows = db(db.meow).select(orderby=~db.meow.timestamp, limitby=(0, MAX_RESULTS))
         return dict(ret_type=1, recent_meows=recent_meows)
 
 
 @action('get_my_meows')
 @action.uses(db, auth.user, url_signer.verify())
 def get_my_meows():
-    my_meows = db(db.meow.author == auth.user_id).select(orderby=~db.meow.timestamp)
+    my_meows = db(db.meow.author == auth.user_id).select(orderby=~db.meow.timestamp, limitby=(0, MAX_RESULTS))
 
     return dict(meows=my_meows)
+
+
+@action('get_selected_user_meows')
+@action.uses(db, auth.user, url_signer.verify())
+def get_selected_user_meows():
+    selected_user_id = request.params.get('selected_user_id')
+    print("selected_user_id = ", selected_user_id)
+    meows = db(db.meow.author == selected_user_id).select(orderby=~db.meow.timestamp, limitby=(0, MAX_RESULTS))
+    return dict(meows=meows)
+
+
+

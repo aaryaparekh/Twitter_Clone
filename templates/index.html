@@ -56,7 +56,7 @@
                           </span>
                             <span class="ml-1">4</span>
                         </a>
-                        <a class="level-item" aria-label="retweet">
+                        <a class="level-item" aria-label="retweet" @click="remeow(meow.username, meow.content)">
                           <span class="icon is-small">
                               <i class="fa fa-retweet" aria-hidden="true"></i>
                           </span>
@@ -72,19 +72,19 @@
 
             <div class="field">
                 <div class="control">
-                    <button class="button is-link" @click="get_my_feed">Your Feed</button>
+                    <button :class="your_feed_button" @click="get_my_feed">Your Feed</button>
                 </div>
             </div>
 
             <div class="field">
                 <div class="control">
-                    <button class="button is-link" @click="get_my_meows">Your Meows</button>
+                    <button :class="your_meows_button" @click="get_my_meows">Your Meows</button>
                 </div>
             </div>
 
             <div class="field">
                 <div class="control">
-                    <button class="button is-link" @click="get_recent_meows">Recent Meows</button>
+                    <button :class="recent_meows_button" @click="get_recent_meows">Recent Meows</button>
                 </div>
             </div>
 
@@ -100,22 +100,26 @@
             <div class="field has-addons" v-for="r in ret_obj">
 
                 <p class="control">
-                    <button class="button">
+                    <button v-if="r.id === selected_user_id" class="button is-link" @click="get_selected_user_meows(r.id)">
+                        <span>{{r.username}}</span>
+                    </button>
+
+                    <button v-else class="button" @click="get_selected_user_meows(r.id)">
                         <span>{{r.username}}</span>
                     </button>
                 </p>
                 <p class="control">
                     <button v-if="r.followed" @click="set_follow(r.id)" class="button is-danger is-outlined">
-                <span class="icon is-small">
-                  <i class="fa fa-times"></i>
-                </span>
+                        <span class="icon is-small">
+                          <i class="fa fa-times"></i>
+                        </span>
                         <span>Unfollow</span>
                     </button>
 
                     <button v-else @click="set_follow(r.id)" class="button is-success is-outlined">
-                <span class="icon is-small">
-                  <i class="fa fa-check"></i>
-                </span>
+                        <span class="icon is-small">
+                          <i class="fa fa-check"></i>
+                        </span>
                         <span>Follow</span>
                     </button>
                 </p>
@@ -127,10 +131,10 @@
     </div>
 </div>
 
-
 [[block page_scripts]]
 <!-- Loads the index-specific js for Vue -->
 <script>
+
     let get_users_url = "[[=XML(get_users_url)]]";
     let set_follow_url = "[[=XML(set_follow_url)]]";
     let search_url = "[[=XML(search_url)]]";
@@ -138,6 +142,7 @@
     let get_recent_meows_url = "[[=XML(get_recent_meows_url)]]";
     let get_my_meows_url = "[[=XML(get_my_meows_url)]]";
     let get_my_feed_url = "[[=XML(get_my_feed_url)]]";
+    let get_selected_user_meows_url = "[[=XML(get_selected_user_meows_url)]]";
 
 </script>
 <script src="js/index.js"></script>
