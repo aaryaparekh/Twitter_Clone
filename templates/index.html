@@ -17,8 +17,95 @@
 
     <div class="columns">
 
-        <!--Feed-->
-        <div class="column">
+        <!--Reply view-->
+        <div v-if="reply_view" class="column">
+
+            <div class="box" v-for="meow in meows">
+                <nav class="level is-mobile">
+                    <div class="level-left">
+                        <a class="level-item" aria-label="reply">
+                          <span class="icon is-small">
+                              <i class="fa fa-user"></i>
+                          </span>
+                            <span class="ml-2">{{meow.username}}</span>
+                        </a>
+                    </div>
+                    <div class="level-right">
+                      <span class="level-item">
+                          {{meow.timestamp}}
+                      </span>
+                    </div>
+                </nav>
+                <div class="content">
+                    {{meow.content}}
+                </div>
+                <nav class="level is-mobile">
+                    <div class="level-left">
+                        <a class="level-item" aria-label="reply">
+                          <span class="icon is-small">
+                              <i class="fa fa-reply" aria-hidden="true"></i>
+                          </span>
+                            <span class="ml-1">{{meow.no_of_replies}}</span>
+                        </a>
+                        <a class="level-item" aria-label="retweet" @click="remeow(meow.username, meow.content)">
+                          <span class="icon is-small">
+                              <i class="fa fa-retweet" aria-hidden="true"></i>
+                          </span>
+                        </a>
+                    </div>
+                </nav>
+            </div>
+
+            <div class="field">
+                <textarea class="textarea" placeholder="What's on your mind?" rows="2" v-model="new_meow"></textarea>
+            </div>
+
+            <div class="field">
+                <div class="control">
+                    <button class="button is-link" @click="reply">Reply</button>
+                </div>
+            </div>
+
+            <!-- Repilies -->
+            <div class="box" v-for="r in replies">
+                <nav class="level is-mobile">
+                    <div class="level-left">
+                        <a class="level-item" aria-label="reply">
+                          <span class="icon is-small">
+                              <i class="fa fa-user"></i>
+                          </span>
+                            <span class="ml-2">{{r.username}}</span>
+                        </a>
+                    </div>
+                    <div class="level-right">
+                      <span class="level-item">
+                          {{r.timestamp}}
+                      </span>
+                    </div>
+                </nav>
+                <div class="content">
+                    {{r.content}}
+                </div>
+                <nav class="level is-mobile">
+                    <div class="level-left">
+                        <a class="level-item" aria-label="reply" @click="reply_transition(r.id)">
+                          <span class="icon is-small">
+                              <i class="fa fa-reply" aria-hidden="true"></i>
+                          </span>
+                            <span class="ml-1">{{r.no_of_replies}}</span>
+                        </a>
+                        <a class="level-item" aria-label="retweet" @click="remeow(r.username, r.content)">
+                          <span class="icon is-small">
+                              <i class="fa fa-retweet" aria-hidden="true"></i>
+                          </span>
+                        </a>
+                    </div>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Feed view -->
+        <div v-else class="column">
             <div class="field">
                 <textarea class="textarea" placeholder="What's on your mind?" rows="2" v-model="new_meow"></textarea>
             </div>
@@ -50,11 +137,11 @@
                 </div>
                 <nav class="level is-mobile">
                     <div class="level-left">
-                        <a class="level-item" aria-label="reply">
+                        <a class="level-item" aria-label="reply" @click="reply_transition(meow.id)">
                           <span class="icon is-small">
                               <i class="fa fa-reply" aria-hidden="true"></i>
                           </span>
-                            <span class="ml-1">4</span>
+                            <span class="ml-1">{{meow.no_of_replies}}</span>
                         </a>
                         <a class="level-item" aria-label="retweet" @click="remeow(meow.username, meow.content)">
                           <span class="icon is-small">
@@ -64,10 +151,10 @@
                     </div>
                 </nav>
             </div>
-
         </div>
 
 
+        <!-- Feed type and user controls -->
         <div class="column is-one-third has-background-light">
 
             <div class="field">
@@ -143,6 +230,9 @@
     let get_my_meows_url = "[[=XML(get_my_meows_url)]]";
     let get_my_feed_url = "[[=XML(get_my_feed_url)]]";
     let get_selected_user_meows_url = "[[=XML(get_selected_user_meows_url)]]";
+    let reply_url = "[[=XML(reply_url)]]";
+    let get_single_meow_url = "[[=XML(get_single_meow_url)]]";
+    let get_replies_url = "[[=XML(get_replies_url)]]"
 
 </script>
 <script src="js/index.js"></script>

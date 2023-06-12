@@ -15,10 +15,13 @@ let init = (app) => {
         results: [],
         new_meow: "",
         meows: [],
+        replies: [],
         your_feed_button: "button",
         your_meows_button: "button",
         recent_meows_button: "button",
         selected_user_id: null,
+        original_meow_id: null,
+        reply_view: false,
     };
     
     app.enumerate = (a) => {
@@ -58,12 +61,72 @@ let init = (app) => {
 
     app.publish_meow = function () {
         axios.get(publish_meow_url, {params: {
-            new_meow: app.vue.new_meow,
-                timestamp: new Date().toISOString()}}).then(function (response) {
+                new_meow: app.vue.new_meow,
+                timestamp: new Date().toISOString()
+        }}).then(function (response) {
             console.log("Published meow!")
             app.vue.new_meow = "";
             app.get_recent_meows();
 
+        });
+    }
+
+    app.reply_transition = function (original_meow_id) {
+        // Switch to reply view
+        app.vue.original_meow_id = original_meow_id;
+
+        axios.get(get_single_meow_url, {params: {
+            meow_id: app.vue.original_meow_id
+        }}).then(function (response) {
+            let meow = response.data.meow;
+
+            let timestamp = new Date(meow[0].timestamp);
+            meow[0].timestamp = Sugar.Date(timestamp).relative().raw;
+
+            app.vue.meows = meow;
+            app.vue.selected_user_id = null;
+            app.vue.reply_view = true;
+            app.vue.recent_meows_button = "button";
+            app.vue.your_feed_button = "button";
+            app.vue.your_meows_button = "button";
+
+            axios.get(get_replies_url, {params:{
+                meow_id: app.vue.original_meow_id
+            }}).then(function (response) {
+                let replies = response.data.replies;
+
+                for (let i = 0; i<replies.length; i++) {
+                    let timestamp = new Date(replies[i].timestamp);
+                    replies[i].timestamp = Sugar.Date(timestamp).relative().raw;
+                }
+
+                app.vue.replies = replies;
+            });
+        });
+
+    }
+
+    app.reply = function () {
+        axios.get(reply_url, {params: {
+                new_meow: app.vue.new_meow,
+                timestamp: new Date().toISOString(),
+                original_meow_id: app.vue.original_meow_id
+        }}).then(function (response) {
+            console.log("Published reply!")
+            app.vue.new_meow = "";
+
+            axios.get(get_replies_url, {params:{
+                meow_id: app.vue.original_meow_id
+            }}).then(function (response) {
+                let replies = response.data.replies;
+
+                for (let i = 0; i<replies.length; i++) {
+                    let timestamp = new Date(replies[i].timestamp);
+                    replies[i].timestamp = Sugar.Date(timestamp).relative().raw;
+                }
+
+                app.vue.replies = replies;
+            });
         });
     }
 
@@ -83,6 +146,7 @@ let init = (app) => {
 
             app.vue.meows = meows;
             app.vue.selected_user_id = null;
+            app.vue.reply_view = false;
             app.vue.recent_meows_button = "button is-link";
             app.vue.your_feed_button = "button";
             app.vue.your_meows_button = "button";
@@ -118,6 +182,7 @@ let init = (app) => {
                 app.vue.meows = meows;
             }
             app.vue.selected_user_id = null;
+            app.vue.reply_view = false;
             app.vue.recent_meows_button = "button";
             app.vue.your_feed_button = "button is-link";
             app.vue.your_meows_button = "button";
@@ -135,6 +200,7 @@ let init = (app) => {
 
             app.vue.meows = meows;
             app.vue.selected_user_id = null;
+            app.vue.reply_view = false;
             app.vue.recent_meows_button = "button";
             app.vue.your_feed_button = "button";
             app.vue.your_meows_button = "button is-link";
@@ -151,6 +217,7 @@ let init = (app) => {
 
             app.vue.meows = meows;
             app.vue.selected_user_id = selected_user_id;
+            app.vue.reply_view = false;
             app.vue.recent_meows_button = "button";
             app.vue.your_feed_button = "button";
             app.vue.your_meows_button = "button";
@@ -169,6 +236,8 @@ let init = (app) => {
         get_my_meows: app.get_my_meows,
         get_selected_user_meows: app.get_selected_user_meows,
         remeow: app.remeow,
+        reply_transition: app.reply_transition,
+        reply: app.reply,
     };
 
     // This creates the Vue instance.
@@ -187,7 +256,6 @@ let init = (app) => {
         });
 
         app.get_recent_meows();
-
     };
 
     // Call to the initializer.

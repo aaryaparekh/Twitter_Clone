@@ -55,7 +55,10 @@ def index():
         get_recent_meows_url=URL('get_recent_meows', signer=url_signer),
         get_my_meows_url=URL('get_my_meows', signer=url_signer),
         get_my_feed_url=URL('get_my_feed', signer=url_signer),
-        get_selected_user_meows_url = URL('get_selected_user_meows', signer=url_signer),
+        get_selected_user_meows_url=URL('get_selected_user_meows', signer=url_signer),
+        reply_url=URL('reply', signer=url_signer),
+        get_single_meow_url=URL('get_single_meow', signer=url_signer),
+        get_replies_url = URL('get_replies', signer=url_signer),
     )
 
 
@@ -189,6 +192,52 @@ def get_selected_user_meows():
     print("selected_user_id = ", selected_user_id)
     meows = db(db.meow.author == selected_user_id).select(orderby=~db.meow.timestamp, limitby=(0, MAX_RESULTS))
     return dict(meows=meows)
+
+
+@action('reply')
+@action.uses(db, auth.user, url_signer.verify())
+def reply():
+    original_meow_id = request.params.get('original_meow_id')
+    new_meow = str(request.params.get('new_meow'))
+    timestamp = str(request.params.get('timestamp'))
+
+    print("-------replying!!!!!")
+    print(original_meow_id)
+    print(new_meow)
+    print(timestamp)
+
+    # update number of replies
+    old_no_of_replies = db(db.meow.id == original_meow_id).select(db.meow.no_of_replies).as_list()[0]['no_of_replies']
+
+    old_no_of_replies += 1
+    db(db.meow.id == original_meow_id).update(no_of_replies=old_no_of_replies)
+
+    # publish
+    db.meow.insert(content=new_meow, timestamp=timestamp, reply_to=original_meow_id)
+
+
+@action('get_single_meow')
+@action.uses(db, auth.user, url_signer.verify())
+def get_single_meow():
+    meow_id = request.params.get('meow_id')
+
+    meow = db(db.meow.id == meow_id).select()
+    return dict(meow=meow)
+
+
+@action('get_replies')
+@action.uses(db, auth.user, url_signer.verify())
+def get_replies():
+    meow_id = request.params.get('meow_id')
+
+    replies = db(db.meow.reply_to == meow_id).select(orderby=~db.meow.timestamp, limitby=(0, MAX_RESULTS))
+    return dict(replies=replies)
+
+
+
+
+
+
 
 
 
